@@ -196,6 +196,23 @@ gradle-app.setting
 
 ### Gradle Patch ###
 # Java heap dump
+.classpath
+.project
+
+# macos
+
+*.DS_Store
+
+# fabric
+
+run/
+
+# java
+
+hs_err_*.log
+replay_*.log
+*.hprof
+*.jfr
 *.hprof
 
 build.yml
