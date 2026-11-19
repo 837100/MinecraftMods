@@ -32,7 +32,7 @@ public class MyFirstMod implements ModInitializer {
 
 		UseItemCallback.EVENT.register((player, level, hand) -> {
 			ItemStack stack = player.getItemInHand(hand);
-			if (stack.isEmpty() || stack.getItem() != Items.STICK || level.isClientSide()) {
+			if (stack.isEmpty() || stack.getItem() != Items.BLAZE_ROD || level.isClientSide()) {
 				return InteractionResult.PASS;
 			}
 
