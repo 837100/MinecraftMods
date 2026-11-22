@@ -28,11 +28,13 @@ public final class ZeusLeapFeature {
 	private static final double LEAP_VERTICAL_SPEED = 3.2D;
 	private static final double IMPACT_RADIUS = 5.0D;
 	private static final float IMPACT_DAMAGE = 6.0F;
-	private static final int LEAP_COOLDOWN_TICKS = 100;
+	private static final double MAX_IMPACT_RADIUS = 128.0D;
+	private static final float MAX_IMPACT_DAMAGE = 500.0F;
+	private static final double IMPACT_RADIUS_PER_FALL_BLOCK = 1.0D;
+	private static final float IMPACT_DAMAGE_PER_FALL_BLOCK = 2.0F;
 	private static final int MAX_LEAP_TRACKING_TICKS = 200;
 
 	private static final Map<UUID, LeapState> ACTIVE_LEAPS = new HashMap<>();
-	private static final Map<UUID, Integer> LEAP_COOLDOWNS = new HashMap<>();
 
 	private ZeusLeapFeature() {
 	}
@@ -47,8 +49,7 @@ public final class ZeusLeapFeature {
 				return InteractionResult.PASS;
 			}
 
-			if (!(player instanceof ServerPlayer serverPlayer)
-					|| LEAP_COOLDOWNS.containsKey(serverPlayer.getUUID())) {
+			if (!(player instanceof ServerPlayer serverPlayer)) {
 				return InteractionResult.SUCCESS_SERVER;
 			}
 
@@ -57,7 +58,6 @@ public final class ZeusLeapFeature {
 			serverPlayer.connection.send(new ClientboundSetEntityMotionPacket(serverPlayer));
 			serverPlayer.resetFallDistance();
 			ACTIVE_LEAPS.put(serverPlayer.getUUID(), new LeapState());
-			LEAP_COOLDOWNS.put(serverPlayer.getUUID(), LEAP_COOLDOWN_TICKS);
 			serverPlayer.playSound(SoundEvents.TRIDENT_RIPTIDE_1.value(), 0.9F, 0.8F);
 			return InteractionResult.SUCCESS_SERVER;
 		});
@@ -78,9 +78,6 @@ public final class ZeusLeapFeature {
 	}
 
 	private static void tickLeaps(MinecraftServer server) {
-		LEAP_COOLDOWNS.replaceAll((uuid, ticks) -> ticks - 1);
-		LEAP_COOLDOWNS.entrySet().removeIf(entry -> entry.getValue() <= 0);
-
 		Set<UUID> onlinePlayers = new HashSet<>();
 		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 			UUID playerId = player.getUUID();
@@ -108,22 +105,29 @@ public final class ZeusLeapFeature {
 	private static void createImpact(ServerPlayer player) {
 		ServerLevel level = player.level();
 		Vec3 position = player.position();
-		double radiusSquared = IMPACT_RADIUS * IMPACT_RADIUS;
+		float fallDistance = (float) Math.max(0.0D, player.fallDistance);
+		double impactRadius = Math.min(MAX_IMPACT_RADIUS,
+				IMPACT_RADIUS + fallDistance * IMPACT_RADIUS_PER_FALL_BLOCK);
+		float impactDamage = Math.min(MAX_IMPACT_DAMAGE,
+				IMPACT_DAMAGE + fallDistance * IMPACT_DAMAGE_PER_FALL_BLOCK);
+		double radiusSquared = impactRadius * impactRadius;
 
 		level.sendParticles(ParticleTypes.CLOUD, position.x, position.y + 0.1D, position.z,
-				36, 1.8D, 0.08D, 1.8D, 0.08D);
+				36 + (int) (fallDistance * 2.0F), impactRadius * 0.36D, 0.08D,
+				impactRadius * 0.36D, 0.08D);
 		level.sendParticles(ParticleTypes.ELECTRIC_SPARK, position.x, position.y + 0.2D, position.z,
-				24, 1.5D, 0.4D, 1.5D, 0.12D);
+				24 + (int) (fallDistance * 1.5F), impactRadius * 0.30D, 0.4D,
+				impactRadius * 0.30D, 0.12D);
 		level.playSound(null, position.x, position.y, position.z,
 				SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 1.0F, 0.85F);
 
 		for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class,
-				player.getBoundingBox().inflate(IMPACT_RADIUS, 2.0D, IMPACT_RADIUS),
+				player.getBoundingBox().inflate(impactRadius, 2.0D, impactRadius),
 				entity -> entity != player && entity.isAlive())) {
 			if (target.distanceToSqr(position) > radiusSquared) {
 				continue;
 			}
-			target.hurt(level.damageSources().playerAttack(player), IMPACT_DAMAGE);
+			target.hurt(level.damageSources().playerAttack(player), impactDamage);
 			Vec3 pushDirection = target.position().subtract(position).multiply(1.0D, 0.0D, 1.0D).normalize();
 			if (pushDirection.lengthSqr() < 1.0E-6D) {
 				pushDirection = new Vec3(0.0D, 0.0D, 1.0D);

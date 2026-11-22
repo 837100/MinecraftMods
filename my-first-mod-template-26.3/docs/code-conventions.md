@@ -92,7 +92,6 @@ private static final Map<UUID, ExampleState> ACTIVE_STATES = new HashMap<>();
 - 거리나 반경은 용도에 맞게 `_RADIUS`, `_DISTANCE` 등의 이름을 사용합니다.
 
 ```java
-private static final int LEAP_COOLDOWN_TICKS = 100;
 private static final double IMPACT_RADIUS = 5.0D;
 private static final float IMPACT_DAMAGE = 6.0F;
 ```
