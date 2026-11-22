@@ -12,3 +12,4 @@
 - [블레이즈 막대 번개](features/lightning-stick.md)
 - [제우스 도약](features/zeus-leap.md)
 - [Storm Sovereign 보스](features/storm-sovereign.md)
+- [정전기 오라](features/static-aura.md)
