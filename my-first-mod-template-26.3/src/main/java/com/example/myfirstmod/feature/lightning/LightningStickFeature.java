@@ -9,7 +9,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.HitResult;
+import com.example.myfirstmod.feature.hunting.KillerAttribution;
 
 public final class LightningStickFeature {
 	private LightningStickFeature() {
@@ -32,6 +34,10 @@ public final class LightningStickFeature {
 							.getValue(Identifier.withDefaultNamespace("lightning_bolt"));
 			LightningBolt lightning = new LightningBolt(lightningType, serverLevel);
 			lightning.setPos(hitResult.getLocation());
+			if (player instanceof ServerPlayer serverPlayer) {
+				lightning.setCause(serverPlayer);
+				KillerAttribution.mark(lightning, serverPlayer);
+			}
 			serverLevel.addFreshEntity(lightning);
 			return InteractionResult.SUCCESS_SERVER;
 		});

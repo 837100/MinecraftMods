@@ -12,6 +12,7 @@ For setup instructions, please see the [Fabric Documentation page](https://docs.
 - [Lightning stick](docs/features/lightning-stick.md)
 - [Zeus leap](docs/features/zeus-leap.md)
 - [Storm Sovereign](docs/features/storm-sovereign.md)
+- [Hunting system](docs/features/hunting-system.md)
 
 ## License
 

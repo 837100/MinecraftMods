@@ -1,6 +1,7 @@
 package com.example.myfirstmod;
 
 import com.example.myfirstmod.feature.lightning.LightningStickFeature;
+import com.example.myfirstmod.feature.hunting.HuntingFeature;
 import com.example.myfirstmod.feature.staticaura.StaticAuraFeature;
 import com.example.myfirstmod.feature.stormsovereign.StormSovereignFeature;
 import com.example.myfirstmod.feature.zeusleap.ZeusLeapFeature;
@@ -17,6 +18,7 @@ public class MyFirstMod implements ModInitializer {
 	public void onInitialize() {
 		LightningStickFeature.initialize();
 		ZeusLeapFeature.initialize();
+		HuntingFeature.initialize();
 		StormSovereignFeature.initialize();
 		StaticAuraFeature.initialize();
 		LOGGER.info("My First Mod has been loaded successfully!");
